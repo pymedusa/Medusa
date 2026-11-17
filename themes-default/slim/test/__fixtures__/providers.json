@@ -2191,61 +2191,6 @@
             "required": ""
         }
     },
-    "sdbits": {
-        "name": "SDBits",
-        "id": "sdbits",
-        "config": {
-            "enabled": false,
-            "search": {
-                "backlog": {
-                    "enabled": true
-                },
-                "manual": {
-                    "enabled": true
-                },
-                "daily": {
-                    "enabled": true,
-                    "maxRecentItems": 5,
-                    "stopAt": 3
-                },
-                "fallback": false,
-                "mode": "eponly",
-                "separator": " ",
-                "seasonTemplates": [
-                    "S{season:0>2}"
-                ],
-                "delay": {
-                    "enabled": false,
-                    "duration": 480
-                }
-            }
-        },
-        "animeOnly": false,
-        "type": "torrent",
-        "public": false,
-        "btCacheUrls": [
-            "https://asnet.pw/download/{info_hash}/",
-            "https://p2pdl.com/download/{info_hash}",
-            "https://itorrents.org/torrent/{info_hash}.torrent",
-            "https://watercache.nanobytes.org/get/{info_hash}",
-            "https://medusa.win/dl?magnet=magnet:?xt=urn:btih:{info_hash}&direct=true"
-        ],
-        "properStrings": [],
-        "headers": {
-            "User-Agent": "Medusa/0.3.16 (Windows; 7; befc8a5f-b966-11ea-9cb1-850514fcd19a)"
-        },
-        "supportsAbsoluteNumbering": false,
-        "supportsBacklog": true,
-        "url": "http://sdbits.org",
-        "urls": {
-            "login": "http://sdbits.org/takeloginn3.php",
-            "search": "http://sdbits.org/browse.php"
-        },
-        "cookies": {
-            "enabled": false,
-            "required": ""
-        }
-    },
     "shanaproject": {
         "name": "ShanaProject",
         "id": "shanaproject",

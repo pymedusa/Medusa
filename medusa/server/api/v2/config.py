@@ -632,8 +632,9 @@ class ConfigHandler(BaseRequestHandler):
         if ignored:
             log.warning('Config patch ignored {items!r}', {'items': ignored})
 
-        # Make sure to update the config file after everything is updated
-        app.instance.save_config()
+        # Recent shows are session state and are not stored in the config file.
+        if any(key != 'recentShows' for key in accepted):
+            app.instance.save_config()
 
         # Push an update to any open Web UIs through the WebSocket
         ws.Message('configUpdated', {

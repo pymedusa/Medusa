@@ -20,6 +20,7 @@ from medusa.common import (
 from medusa.network_timezones import parse_date_time
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.show.show import Show
+from medusa.tv.series import SeriesIdentifier
 
 from six.moves import map
 
@@ -45,7 +46,10 @@ class StatsHandler(BaseRequestHandler):
         if not identifier or identifier == 'overall':
             data = overall_stats()
         elif identifier == 'show':
-            data = per_show_stats()
+            show_slug = self.get_argument('showslug', default=None)
+            if show_slug is not None and not SeriesIdentifier.from_slug(show_slug):
+                return self._bad_request('Invalid series slug')
+            data = per_show_stats(show_slug=show_slug)
         else:
             return self._not_found('Statistics not found')
 
@@ -57,14 +61,23 @@ def overall_stats():
     return Show.overall_stats()
 
 
-def per_show_stats():
-    """Generate per-show library statistics."""
+def per_show_stats(show_slug=None):
+    """Generate per-show statistics, optionally limited to one show."""
     pre_today = [SKIPPED, WANTED, FAILED]
     snatched = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
     downloaded = [DOWNLOADED, ARCHIVED]
 
     def query_in(items):
         return '({0})'.format(','.join(map(str, items)))
+
+    show_filter = ''
+    params = []
+    if show_slug is not None:
+        series = SeriesIdentifier.from_slug(show_slug)
+        if not series:
+            raise ValueError('Invalid series slug')
+        show_filter = 'AND tv_eps.indexer = ? AND tv_eps.showid = ?'
+        params = [series.indexer.id, series.id]
 
     query = dedent("""\
         SELECT tv_eps.indexer AS indexerId, tv_eps.showid AS seriesId,
@@ -109,6 +122,7 @@ def per_show_stats():
             tv_shows.network as network
         FROM tv_episodes tv_eps, tv_shows
         WHERE tv_eps.showid = tv_shows.indexer_id AND tv_eps.indexer = tv_shows.indexer
+        {show_filter}
         GROUP BY tv_eps.showid, tv_eps.indexer;
     """).format(
         status_quality=query_in(snatched),
@@ -119,10 +133,11 @@ def per_show_stats():
         skipped=SKIPPED,
         wanted=WANTED,
         unaired=UNAIRED,
+        show_filter=show_filter,
     )
 
     main_db_con = db.DBConnection()
-    sql_result = main_db_con.select(query)
+    sql_result = main_db_con.select(query, params)
 
     stats_data = {}
     stats_data['stats'] = []

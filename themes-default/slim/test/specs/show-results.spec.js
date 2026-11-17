@@ -52,6 +52,7 @@ describe('ShowResults.test.js', () => {
                 provider: {
                     getters: providerModule.getters,
                     state: state.provider,
+                    mutations: { claimProviderCache: jest.fn(), releaseProviderCache: jest.fn() },
                     actions: {
                         getProviders: jest.fn(),
                         getProviderCacheResults: jest.fn().mockImplementation(() => Promise.resolve({

@@ -16,7 +16,7 @@
     "dredd": "14.1.0"
   },
   "resolutions": {
-    "underscore": "^1.13.7",
+    "underscore": "^1.13.8",
     "minimist": "^1.2.8",
     "getobject": "^1.1.1",
     "form-data": "^4.0.4",

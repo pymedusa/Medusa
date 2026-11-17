@@ -34,7 +34,6 @@ from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
 from tornado.gen import coroutine
 from tornado.web import (
-    HTTPError,
     RequestHandler,
     StaticFileHandler,
     addslash,

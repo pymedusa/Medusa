@@ -38,6 +38,7 @@ from medusa import (
     history,
     logger,
     notifiers,
+    ws,
 )
 from medusa.common import (
     ARCHIVED,
@@ -1290,6 +1291,7 @@ class PostProcessor(object):
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
         sql_l = []
+        episode_updates = []
         # download subtitles
         for cur_ep in [ep_obj] + ep_obj.related_episodes:
             with cur_ep.lock:
@@ -1307,13 +1309,20 @@ class PostProcessor(object):
                 except Exception:
                     logger.log(u'Could not create/update meta files. Continuing with post-processing...')
 
-                sql_l.append(cur_ep.get_sql())
+                ep_sql = cur_ep.get_sql()
+                if ep_sql:
+                    sql_l.append(ep_sql)
+                    episode_updates.append(cur_ep.to_json())
 
         # now that processing has finished, we can put the info in the DB.
         # If we do it earlier, then when processing fails, it won't try again.
         if sql_l:
             main_db_con = db.DBConnection()
-            main_db_con.mass_action(sql_l)
+            results = main_db_con.mass_action(sql_l)
+            if results and all(result is not None for result in results):
+                # Refresh open UIs only after all processed episodes have been saved.
+                for episode_data in episode_updates:
+                    ws.Message('episodeUpdated', episode_data).push()
 
         # log it to history episode and related episodes (multi-episode for example)
         for cur_ep in [ep_obj] + ep_obj.related_episodes:

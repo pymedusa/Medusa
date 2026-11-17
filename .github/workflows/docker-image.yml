@@ -21,21 +21,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     # https://github.com/docker/setup-qemu-action
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v1
+      uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
       with:
         platforms: ${{ env.PLATFORMS }}
     # https://github.com/docker/setup-buildx-action
     - name: Set up Docker Buildx
       id: buildx
-      uses: docker/setup-buildx-action@v1
-      with:
-        install: true
+      uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
     - name: Docker meta
       id: meta
-      uses: docker/metadata-action@v3
+      uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
       with:
         images: ${{ github.repository_owner }}/medusa
         # tag with master or develop
@@ -44,12 +42,14 @@ jobs:
         # also tag master as latest
         flavor: latest=${{ github.ref_name == 'master' }}
     - name: Log into Dockerhub
-      uses: docker/login-action@v1
+      uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
       with:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASSWORD }}
     - name: Build Docker image
-      uses: docker/build-push-action@v2
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      env:
+        DOCKER_BUILD_RECORD_UPLOAD: false
       with:
         context: .
         file: Dockerfile
@@ -58,6 +58,8 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         push: true
         pull: true
+        cache-from: type=registry,ref=${{ fromJSON(steps.meta.outputs.json).tags[0] }}-buildcache
+        cache-to: type=registry,ref=${{ fromJSON(steps.meta.outputs.json).tags[0] }}-buildcache,mode=max,ignore-error=true
         build-args: |
           GIT_COMMIT=${{ github.sha }}
           GIT_BRANCH=${{ github.ref_name }}

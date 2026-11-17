@@ -180,6 +180,7 @@ export default {
                 this.loading = true;
                 const url = `series/${showSlug}/operation`;
                 await this.client.api.post(url, { type: 'RENAME_EPISODES', episodes }, { timeout: 120000 });
+                this.$store.commit('invalidateShowEpisodeCache', { showSlug });
                 this.$router.push({ name: 'show', query: { showslug: showSlug } });
             } catch (error) {
                 this.$snotify.error(

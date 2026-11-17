@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 from guessit.api import default_api
 
+from medusa.name_parser.rules.expected_patch import apply_expected_value_patch
 from medusa.name_parser.rules.properties import (
     blacklist,
     container,
@@ -15,8 +16,10 @@ from medusa.name_parser.rules.properties import (
 )
 from medusa.name_parser.rules.rules import rules
 
+# Must run before configure() rebuilds title/release_group expected matchers.
+apply_expected_value_patch()
 
-default_api.configure({})
+default_api.configure({}, force=True)
 default_api.rebulk.rebulk(blacklist())
 default_api.rebulk.rebulk(source())
 default_api.rebulk.rebulk(screen_size())

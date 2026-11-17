@@ -1141,7 +1141,8 @@ class Episode(TV):
             data['statistics']['subtitleSearch']['last'] = self.subtitles_lastsearch
             data['statistics']['subtitleSearch']['count'] = self.subtitles_searchcount
             data['wantedQualities'] = self.wanted_quality
-            data['related'] = self.related_episodes
+            # Serialize related episodes; raw Episode instances break JSON/WebSocket dumps.
+            data['related'] = [ep.to_json(detailed=False) for ep in self.related_episodes]
 
             if self.file_size:
                 # Used by the test-rename vue component.
@@ -2165,6 +2166,7 @@ class Episode(TV):
         :type new_status: int
 
         :returns: The episodes update sql to be used in a mass action.
+            The caller must publish episodeUpdated after committing the batch.
         """
         with self.lock:
             if self.status == UNAIRED:
@@ -2205,8 +2207,6 @@ class Episode(TV):
                     self.manually_searched = False
 
             self.status = new_status
-            # Push an update with the updated episode to any open Web UIs through the WebSocket
-            ws.Message('episodeUpdated', self.to_json()).push()
 
             # Make sure to run the collected sql through a mass action.
             return self.get_sql()

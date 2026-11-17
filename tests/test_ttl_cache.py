@@ -16,6 +16,112 @@ class CacheValue(object):
     """Simple object that supports weak references in cache tests."""
 
 
+@pytest.fixture
+def cache_clock(monkeypatch):
+    """Control cache time without sleeping."""
+    now = [0.0]
+    monkeypatch.setattr(time, 'monotonic', lambda: now[0])
+    return now
+
+
+def test_large_cache_does_not_scan_on_every_call(cache_clock):
+    """Both new keys and cache hits avoid repeated full-cache sweeps."""
+    class CountingCache(dict):
+        scans = 0
+
+        def items(self):
+            self.scans += 1
+            return super().items()
+
+    @ttl_cache(21600.0)
+    def cached(value):
+        return value
+
+    # Count actual cache traversals instead of asserting machine-dependent timings.
+    cells = dict(zip(cached.__code__.co_freevars, cached.__closure__))
+    entries = CountingCache()
+    cells['_tmp'].cell_contents = entries
+
+    for value in range(2700):
+        assert cached(value) == value
+    assert entries.scans <= 1
+
+    for value in range(2700):
+        assert cached(value) == value
+    assert entries.scans <= 1
+
+    # Permit one more sweep after a minute, not one per subsequent cache hit.
+    cache_clock[0] = 60.0
+    for value in range(2700):
+        assert cached(value) == value
+    assert entries.scans == 2
+
+
+def test_periodic_sweep_evicts_expired_values_on_cache_hit(cache_clock):
+    """Hitting a live key still releases unused expired values periodically."""
+    @ttl_cache(10.0)
+    def cached(value):
+        return CacheValue()
+
+    cache_clock[0] = 1.0
+    first_ref = weakref.ref(cached('expired'))
+    cache_clock[0] = 6.0
+    live_value = cached('live')
+    cache_clock[0] = 11.0
+    assert cached('live') is live_value
+    gc.collect()
+    assert first_ref() is None
+
+
+@pytest.mark.parametrize('ignore_error', [False, True])
+def test_expired_key_refreshes_between_sweeps(cache_clock, ignore_error):
+    """Per-key expiry and stale-on-error behavior do not wait for the next sweep."""
+    calls = []
+
+    @ttl_cache(10.0, ignore_error=ignore_error)
+    def cached(value):
+        calls.append(value)
+        if value == 'target' and calls.count(value) > 1:
+            raise RuntimeError('refresh failed')
+        return CacheValue()
+
+    cached('first')
+    cache_clock[0] = 5.0
+    value_ref = weakref.ref(cached('target'))
+    cache_clock[0] = 10.0
+    cached('trigger-sweep')
+    cache_clock[0] = 16.0
+    for _ in range(2):
+        if ignore_error:
+            assert cached('target') is value_ref()
+        else:
+            with pytest.raises(RuntimeError):
+                cached('target')
+    assert calls.count('target') == 3
+    gc.collect()
+    assert (value_ref() is not None) == ignore_error
+
+
+@pytest.mark.parametrize('ttl', [0.0, -1.0])
+def test_nonpositive_ttl_never_reuses_values(cache_clock, ttl):
+    """Zero and negative TTLs refresh and evict even when time has not advanced."""
+    calls = []
+
+    @ttl_cache(ttl)
+    def cached(value):
+        calls.append(value)
+        return CacheValue()
+
+    first_ref = weakref.ref(cached('first'))
+    cached('first')
+    second_ref = weakref.ref(cached('second'))
+    cached('third')
+    assert calls == ['first', 'first', 'second', 'third']
+    gc.collect()
+    assert first_ref() is None
+    assert second_ref() is None
+
+
 def test_identical_calls_within_ttl_execute_once():
     calls = []
 

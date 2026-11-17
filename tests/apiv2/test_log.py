@@ -2,9 +2,42 @@
 """Test /log route."""
 from __future__ import unicode_literals
 import json
+import threading
 
 from medusa.server.api.v2 import log
 import pytest
+
+
+@pytest.mark.parametrize('new_name, expected_name', [
+    (None, 'API log test'),
+    ('', 'API log test'),
+    ('VUE', 'API log test :: [VUE]'),
+])
+def test_rename_thread_restores_original_name(monkeypatch, new_name, expected_name):
+    """Temporarily add a thread label without changing the original name."""
+    thread = threading.current_thread()
+    monkeypatch.setattr(thread, 'name', 'API log test')
+
+    with log.rename_thread(new_name):
+        assert thread.name == expected_name
+
+    assert thread.name == 'API log test'
+
+
+@pytest.mark.parametrize('new_name', [None, '', 'VUE'])
+@pytest.mark.parametrize('error_type', [RuntimeError, SystemExit])
+def test_rename_thread_preserves_exceptions(monkeypatch, new_name, error_type):
+    """Propagate errors and restore the thread name when the body fails."""
+    thread = threading.current_thread()
+    monkeypatch.setattr(thread, 'name', 'API log test')
+    error = error_type('Logging failed')
+
+    with pytest.raises(error_type) as caught:
+        with log.rename_thread(new_name):
+            raise error
+
+    assert caught.value is error
+    assert thread.name == 'API log test'
 
 
 @pytest.mark.gen_test

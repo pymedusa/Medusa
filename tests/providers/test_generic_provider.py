@@ -3,10 +3,11 @@
 from __future__ import unicode_literals
 
 from collections import namedtuple
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from dateutil import tz
 
+from medusa.providers import generic_provider
 from medusa.providers.generic_provider import GenericProvider
 
 import pytest
@@ -134,17 +135,19 @@ TOLERANCE_SECONDS = 60  # Acceptable difference for human-time tests
         'fromtimestamp': True
     },
     {  # p22: hd-space test human date like 'yesterday at 12:00:00'
-        'pubdate': 'yesterday at {0}'.format((NOW_UTC - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
-        'expected': NOW_UTC - timedelta(days=1, minutes=10, seconds=25),
-        'human_time': False
+        'pubdate': 'yesterday at 23:52:26',
+        'expected': datetime(2026, 11, 1, 23, 52, 26, tzinfo=tz.gettz('UTC')),
+        'human_time': False,
+        'fixed_now': datetime(2026, 11, 2, 0, 2, 51, tzinfo=tz.gettz('UTC'))
     },
     {  # p23: hd-space test human date like 'today at 12:00:00'
-        'pubdate': 'today at {0}'.format((NOW_UTC - timedelta(minutes=10, seconds=25)).strftime('%H:%M:%S')),
-        'expected': NOW_UTC - timedelta(days=0, minutes=10, seconds=25),
-        'human_time': False
+        'pubdate': 'today at 23:52:26',
+        'expected': datetime(2026, 11, 2, 23, 52, 26, tzinfo=tz.gettz('UTC')),
+        'human_time': False,
+        'fixed_now': datetime(2026, 11, 2, 0, 2, 51, tzinfo=tz.gettz('UTC'))
     },
 ])
-def test_parse_pubdate(p):
+def test_parse_pubdate(p, monkeypatch):
     # Given
     parsed_date = p['pubdate']
     expected = p['expected']
@@ -153,6 +156,17 @@ def test_parse_pubdate(p):
     df = p.get('dayfirst', False)
     yf = p.get('yearfirst', False)
     ft = p.get('fromtimestamp', False)
+
+    fixed_now = p.get('fixed_now')
+    if fixed_now:
+        class FixedDatetime(datetime):
+            @classmethod
+            def now(cls, tz=None):
+                if tz is None:
+                    return fixed_now.replace(tzinfo=None)
+                return fixed_now.astimezone(tz)
+
+        monkeypatch.setattr(generic_provider, 'datetime', FixedDatetime)
 
     # When
     actual = sut.parse_pubdate(parsed_date, human_time=ht, timezone=tzone,
@@ -168,9 +182,36 @@ def test_parse_pubdate(p):
     if ht and isinstance(expected, (int, float)):
         # Allow up to a few seconds difference due to test execution time
         assert abs(expected - actual) <= TOLERANCE_SECONDS, \
-            f"Expected ~{expected}s, got {actual}s (diff {expected - actual}s)"
+            f'Expected ~{expected}s, got {actual}s (diff {expected - actual}s)'
     else:
         assert expected == actual
+
+
+@pytest.mark.parametrize(('pubdate', 'expected'), [
+    ('today at 19:42:35', datetime(2026, 8, 27, 19, 42, 35, tzinfo=tz.gettz('UTC'))),
+    ('yesterday at 19:42:35', datetime(2026, 8, 26, 19, 42, 35, tzinfo=tz.gettz('UTC'))),
+], ids=['today', 'yesterday'])
+def test_parse_pubdate_relative_day_uses_utc_date(monkeypatch, pubdate, expected):
+    """Deterministically verify UTC default handling for today/yesterday phrases."""
+    local_now = datetime(2026, 8, 28, 5, 53, 0)
+    utc_now = datetime(2026, 8, 27, 19, 53, 0, tzinfo=tz.gettz('UTC'))
+    original_parse = generic_provider.parser.parse
+
+    class FixedDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            if tz is None:
+                return local_now
+            return utc_now.astimezone(tz)
+
+    def fake_parse(*args, **kwargs):
+        kwargs.setdefault('default', datetime(2026, 8, 28))
+        return original_parse(*args, **kwargs)
+
+    monkeypatch.setattr(generic_provider, 'datetime', FixedDatetime)
+    monkeypatch.setattr(generic_provider.parser, 'parse', fake_parse)
+
+    assert expected == sut.parse_pubdate(pubdate)
 
 
 @pytest.mark.parametrize('p', [

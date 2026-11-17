@@ -82,8 +82,9 @@
                                                 :onmouseover="`document.getElementById('${`steps-${curDirIndex}`}').style.display = 'block';`"
                                                 :onmouseleave="`document.getElementById('${`steps-${curDirIndex}`}').style.display = 'none';`"
                                             >
-                                                <span v-if="!addedShowQueueItems.find(item => item.providedInfo.curDirIndex === curDirIndex).success">Running...</span>
-                                                <span v-else>Added</span>
+                                                <span v-if="addedShowQueueItems.find(item => item.providedInfo.curDirIndex === curDirIndex).success === false">Failed</span>
+                                                <span v-else-if="addedShowQueueItems.find(item => item.providedInfo.curDirIndex === curDirIndex).success === true">Added</span>
+                                                <span v-else>Running...</span>
                                             </div>
                                             <div :id="`steps-${curDirIndex}`" class="stepdisplay" style="display: none;">
                                                 <ul>

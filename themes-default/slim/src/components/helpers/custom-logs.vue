@@ -73,16 +73,20 @@ export default {
 </script>
 <style scoped>
 div.wrapper > div {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
     margin-bottom: 5px;
 }
 
 div.identifier {
-    float: none;
-    width: auto;
-    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: break-word;
 }
 
 div.level {
-    float: right;
+    flex-shrink: 0;
+    order: 1;
 }
 </style>

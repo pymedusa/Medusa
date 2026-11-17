@@ -12,7 +12,7 @@
 
         <show-history v-show="show" class="show-history vgt-table-styling" v-bind="{ show, season, episode }" :key="`history-${show.id.slug}-${season}-${episode || ''}`" />
 
-        <show-results v-show="show" class="table-layout vgt-table-styling" v-bind="{ show, season, episode }" :key="`results-${show.id.slug}-${season}-${episode || ''}`" />
+        <show-results v-if="show.id.slug && show.id.slug === showSlug" class="table-layout vgt-table-styling" v-bind="{ show, season, episode }" :key="`results-${show.id.slug}-${season}-${episode || ''}`" />
 
     </div>
 </template>
@@ -129,6 +129,9 @@ export default {
         if (!show || !show.id.slug) {
             getShow({ showSlug, detailed: false });
         }
+    },
+    activated() {
+        this.$store.commit('currentShow', this.showSlug);
     }
 };
 </script>
