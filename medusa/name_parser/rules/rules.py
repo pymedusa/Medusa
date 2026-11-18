@@ -1994,6 +1994,179 @@ class PartsAsEpisodeNumbers(Rule):
         return to_rename
 
 
+class FrenchEpisodeOfTotal(Rule):
+    """Convert French NnLtt / Sx-NNltt / NxNNltt markers into episode numbers.
+
+    French releases often use a lowercase L as a stand-in for '/' / 'sur':
+    ``Show - 01l12 - Title`` means episode 1 of 12.
+    ``Show - S1-02l10 - Title`` and ``Show - 1x02l10 - Title`` are the same idea
+    with an explicit season.
+
+    Also strips a leading NnLtt marker from episode_title so title-priority
+    matching can see the real episode name.
+
+    Small totals without zero-padding (``1l2``, ``2l2``) are left alone: those are
+    usually multipart labels, not episode numbers.
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    bare_pattern = re.compile(r'^(?P<episode>\d{1,2})l(?P<total>\d{1,2})$', re.IGNORECASE)
+    prefix_pattern = re.compile(
+        r'^(?:(?P<season>\d{1,2})[xX])?(?P<episode>\d{1,2})l(?P<total>\d{1,2})'
+        r'(?:\s*[-–—:]\s*(?P<title>.+))?$',
+        re.IGNORECASE,
+    )
+
+    @classmethod
+    def _is_episode_of_total(cls, episode_num, total, episode_raw):
+        if episode_num < 1 or episode_num > total:
+            return False
+        # Ignore multipart labels like 1l2 / 2l2.
+        if total < 6 and len(episode_raw) < 2:
+            return False
+        return True
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        to_append = []
+
+        fileparts = matches.markers.named('path')
+        search_spans = (
+            [(part.start, part.end) for part in marker_sorted(fileparts, matches)]
+            if fileparts else [(0, len(matches.input_string))]
+        )
+
+        for start, end in search_spans:
+            existing_episode = matches.range(
+                start, end, predicate=lambda match: match.name == 'episode', index=0
+            )
+            existing_season = matches.range(
+                start, end, predicate=lambda match: match.name == 'season', index=0
+            )
+
+            # 1) Clean episode_title that still starts with NnLtt / NxNNltt.
+            episode_titles = matches.range(
+                start, end, predicate=lambda match: match.name == 'episode_title'
+            )
+            for episode_title in episode_titles:
+                parsed = self.prefix_pattern.match(str(episode_title.value).strip())
+                if not parsed:
+                    continue
+                episode_num = int(parsed.group('episode'))
+                total = int(parsed.group('total'))
+                if not self._is_episode_of_total(episode_num, total, parsed.group('episode')):
+                    continue
+
+                clean_title = (parsed.group('title') or '').strip()
+                season_num = int(parsed.group('season')) if parsed.group('season') else None
+
+                if clean_title:
+                    new_title = copy.copy(episode_title)
+                    new_title.name = 'episode_title'
+                    new_title.value = cleanup(clean_title)
+                    to_append.append(new_title)
+                    to_remove.append(episode_title)
+                else:
+                    # Marker-only noise such as "2x02l05" with the real title elsewhere.
+                    to_remove.append(episode_title)
+
+                if existing_episode is None:
+                    episode = copy.copy(episode_title)
+                    episode.name = 'episode'
+                    episode.value = episode_num
+                    to_append.append(episode)
+                    existing_episode = episode
+
+                if existing_season is None and season_num is not None:
+                    season = copy.copy(episode_title)
+                    season.name = 'season'
+                    season.value = season_num
+                    to_append.append(season)
+                    existing_season = season
+                elif existing_season is None and existing_episode is not None:
+                    season = copy.copy(episode_title)
+                    season.name = 'season'
+                    season.value = 1
+                    to_append.append(season)
+                    existing_season = season
+
+            if existing_episode is not None:
+                if to_remove or to_append:
+                    return to_remove, to_append
+                continue
+
+            # 2) Bare alternative_title marker: 01l12 + separate title.
+            markers = matches.range(
+                start,
+                end,
+                predicate=lambda match: match.name == 'alternative_title',
+            )
+            marker = None
+            episode_num = None
+            season_num = None
+            for candidate in markers:
+                raw = str(candidate.value).strip()
+                parsed = self.prefix_pattern.match(raw) or self.bare_pattern.match(raw)
+                if not parsed:
+                    continue
+                episode_num = int(parsed.group('episode'))
+                total = int(parsed.group('total'))
+                if not self._is_episode_of_total(episode_num, total, parsed.group('episode')):
+                    continue
+                # bare_pattern has no season group; prefix_pattern may leave it unset.
+                season_raw = parsed.groupdict().get('season')
+                season_num = int(season_raw) if season_raw else None
+                marker = candidate
+                break
+
+            if marker is None:
+                if to_remove or to_append:
+                    return to_remove, to_append
+                continue
+
+            episode = copy.copy(marker)
+            episode.name = 'episode'
+            episode.value = episode_num
+            to_append.append(episode)
+            to_remove.append(marker)
+
+            if existing_season is None:
+                season = copy.copy(marker)
+                season.name = 'season'
+                season.value = season_num if season_num is not None else 1
+                to_append.append(season)
+
+            remaining_titles = [
+                match for match in markers
+                if match is not marker and str(match.value).strip()
+            ]
+            if remaining_titles:
+                episode_title = copy.copy(remaining_titles[0])
+                episode_title.name = 'episode_title'
+                episode_title.value = cleanup(remaining_titles[0].value)
+                to_append.append(episode_title)
+                to_remove.append(remaining_titles[0])
+                to_remove.extend(matches.range(
+                    start,
+                    end,
+                    predicate=lambda match: match.name == 'episode_title',
+                ))
+
+            return to_remove, to_append
+
+        if to_remove or to_append:
+            return to_remove, to_append
+
+
 class RemoveInvalidEpisodeSeparator(Rule):
     """Remove invalid episode title between absolute episode ranges.
 
@@ -2141,11 +2314,19 @@ class SeasonDashEpisodeNumbers(Rule):
         episode_number = int(match.group(2))
 
         existing_seasons = {int(item.value) for item in matches.named('season')}
-        # Season ranges like "s01-04" already expand to several seasons; do not
-        # treat the second number as an episode.
+        # GuessIt expands tokens like "S2-04" / "S01-04" into season ranges
+        # [2,3,4] / [1,2,3,4]. Keep bare packs (Show.Name.S01-04.1080p); rewrite
+        # titled episode files ("S2-04 - Episode Title") as season+episode.
+        is_guessit_range = (
+            len(existing_seasons) > 1
+            and episode_number > season_number
+            and existing_seasons == set(range(season_number, episode_number + 1))
+        )
+        titled_after_marker = bool(re.match(r'\s*-\s*\S', matches.input_string[match.end():]))
         if len(existing_seasons) > 1:
-            return
-        if existing_seasons and season_number not in existing_seasons:
+            if not is_guessit_range or not titled_after_marker:
+                return
+        elif existing_seasons and season_number not in existing_seasons:
             return
 
         to_remove = []
@@ -2162,7 +2343,15 @@ class SeasonDashEpisodeNumbers(Rule):
         episode.end = match.end(2)
         to_append.append(episode)
 
-        if not existing_seasons:
+        if is_guessit_range:
+            to_remove.extend(matches.named('season'))
+            season = copy.copy(template[0])
+            season.name = 'season'
+            season.value = season_number
+            season.start = match.start(1)
+            season.end = match.end(1)
+            to_append.append(season)
+        elif not existing_seasons:
             season = copy.copy(template[0])
             season.name = 'season'
             season.value = season_number
@@ -2629,6 +2818,301 @@ class ReleaseGroupPostProcessor(Rule):
         return to_remove, to_append
 
 
+class CleanupBroadcastFilenameTags(Rule):
+    """Promote broadcast channels and keep duration/channel out of other fields.
+
+    Medusa matches channels as ``broadcast_channel`` so GuessIt does not strip
+    standalone names (e.g. ARTE). Rename them to ``streaming_service`` for
+    consumers, and drop release_group / alternative_title values that are only
+    a duration or channel token.
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    duration_value = re.compile(
+        r'^(?:\()?(\d{1,2}h\d{1,2}m|\d{1,3}m\d{1,2}s)(?:\))?$',
+        re.IGNORECASE,
+    )
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        to_append = []
+
+        channel_values = {
+            str(item.value).strip().lower()
+            for item in matches.named('broadcast_channel')
+        }
+        # Also accept already-promoted streaming_service values from this pass.
+        channel_values.update(
+            str(item.value).strip().lower()
+            for item in matches.named('streaming_service')
+            if 'medusa-broadcast-channel' in (item.tags or [])
+        )
+
+        for channel in matches.named('broadcast_channel'):
+            to_remove.append(channel)
+            promoted = copy.copy(channel)
+            promoted.name = 'streaming_service'
+            to_append.append(promoted)
+            channel_values.add(str(channel.value).strip().lower())
+
+        for name in ('release_group', 'alternative_title'):
+            for item in matches.named(name):
+                value = str(item.value or '').strip()
+                if not value:
+                    continue
+                if self.duration_value.match(value) or value.lower() in channel_values:
+                    to_remove.append(item)
+
+        # If duration was only seen as a polluted release_group, ensure duration exists.
+        if not matches.named('duration'):
+            for item in list(matches.named('release_group')):
+                value = str(item.value or '').strip()
+                parsed = self.duration_value.match(value)
+                if not parsed:
+                    continue
+                duration_match = copy.copy(item)
+                duration_match.name = 'duration'
+                duration_match.value = parsed.group(1).lower()
+                to_append.append(duration_match)
+                if item not in to_remove:
+                    to_remove.append(item)
+
+        return to_remove, to_append
+
+
+class FrenchBroadcastEpisodeMarkers(Rule):
+    """Parse French broadcast numbering common in documentary rips.
+
+    Patterns handled (when standard SxxExx is absent or mangled):
+
+    - ``3x03bis`` → season 3 episode 3 (``bis`` = extended cut, same slot)
+    - ``11, 10`` → season 11 episode 10
+    - ``901`` / ``1001`` (dash-bounded) → season 9 episode 1 / season 10 episode 1
+
+    Also strips a duration-in-minutes false episode (e.g. ``82`` from
+    ``Rallongee a 82 minutes``) when a better marker is found.
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+    bis_pattern = re.compile(
+        r'(?i)(?<![A-Za-z0-9])(\d{1,2})x(\d{1,2})bis(?![A-Za-z0-9])'
+    )
+    comma_pattern = re.compile(
+        r'(?i)(?<![A-Za-z0-9])(\d{1,2})\s*,\s*(\d{1,2})(?![A-Za-z0-9])'
+    )
+    # " - 901 - " / " - 1001 - " between title and episode title (not ".720.HDTV")
+    compact_pattern = re.compile(
+        r'(?i)(?:^|[\s._])-\s*(\d{3,4})\s*-\s*(?=[A-Za-zÀ-ÿ])'
+    )
+    title_after_marker = re.compile(
+        r'^\s*[-–—:]\s*(?P<title>.+?)\s*(?:[-–—]\s*)?(?:\(|\[|$)'
+    )
+    _RESOLUTION_HEIGHTS = frozenset({480, 576, 720, 1080, 1440, 2160})
+
+    @staticmethod
+    def _decode_compact(number):
+        raw = str(number)
+        # Years like 2012 must not become S20E12.
+        if len(raw) == 4 and raw.startswith(('19', '20')):
+            return None, None
+        # Resolution heights must not become SxEx (e.g. .720.HDTV → S07E20).
+        if int(raw) in FrenchBroadcastEpisodeMarkers._RESOLUTION_HEIGHTS:
+            return None, None
+        if len(raw) == 3:
+            return int(raw[0]), int(raw[1:])
+        if len(raw) == 4:
+            return int(raw[:2]), int(raw[2:])
+        return None, None
+
+    def _search_spans(self, matches):
+        fileparts = matches.markers.named('path')
+        if fileparts:
+            return [(part.start, part.end) for part in marker_sorted(fileparts, matches)]
+        return [(0, len(matches.input_string))]
+
+    def when(self, matches, context):
+        """Evaluate the rule."""
+        if context.get('show_type') == 'anime':
+            return
+
+        to_remove = []
+        to_append = []
+        found = None
+        kind = None
+
+        for start, end in self._search_spans(matches):
+            chunk = matches.input_string[start:end]
+            # Prefer explicit markers over compact codes.
+            match = self.bis_pattern.search(chunk)
+            if match:
+                found = (start + match.start(1), start + match.end(),
+                         int(match.group(1)), int(match.group(2)), match.end())
+                kind = 'bis'
+                break
+            match = self.comma_pattern.search(chunk)
+            if match:
+                season_n, episode_n = int(match.group(1)), int(match.group(2))
+                if 1 <= season_n <= 40 and 1 <= episode_n <= 40:
+                    found = (start + match.start(1), start + match.end(),
+                             season_n, episode_n, match.end())
+                    kind = 'comma'
+                    break
+            # Compact only when we do not already have a sane SxE pair.
+            existing_season = matches.range(
+                start, end, predicate=lambda m: m.name == 'season', index=0
+            )
+            existing_episode = matches.range(
+                start, end, predicate=lambda m: m.name == 'episode', index=0
+            )
+            season_val = existing_season.value if existing_season else None
+            if isinstance(season_val, list):
+                season_val = season_val[0] if season_val else None
+            if existing_episode and season_val and 1 <= int(season_val) <= 50:
+                continue
+            match = self.compact_pattern.search(chunk)
+            if match:
+                season_n, episode_n = self._decode_compact(match.group(1))
+                if season_n and episode_n and 1 <= season_n <= 40 and 1 <= episode_n <= 40:
+                    found = (start + match.start(1), start + match.end(1),
+                             season_n, episode_n, match.end())
+                    kind = 'compact'
+                    break
+
+        if not found:
+            return
+
+        marker_start, marker_end, season_n, episode_n, _ = found
+        template = (
+            matches.named('season')
+            or matches.named('episode')
+            or matches.named('title')
+            or matches.named('episode_title')
+        )
+        if not template:
+            return
+
+        # Drop conflicting season/episode/absolute values (years-as-season, minute
+        # counts, compact codes left as absolute_episode, etc.).
+        for item in (
+            matches.named('season')
+            + matches.named('episode')
+            + matches.named('absolute_episode')
+        ):
+            to_remove.append(item)
+
+        season = copy.copy(template[0])
+        season.name = 'season'
+        season.value = season_n
+        season.start = marker_start
+        season.end = marker_end
+        to_append.append(season)
+
+        episode = copy.copy(template[0])
+        episode.name = 'episode'
+        episode.value = episode_n
+        episode.start = marker_start
+        episode.end = marker_end
+        to_append.append(episode)
+
+        # Recover episode title after the marker when GuessIt missed it.
+        if not matches.named('episode_title'):
+            # Use the filepart that contained the marker.
+            after = None
+            for start, end in self._search_spans(matches):
+                if start <= marker_start < end:
+                    after = matches.input_string[marker_end:end]
+                    break
+            if after:
+                title_match = self.title_after_marker.match(after)
+                if not title_match and kind == 'compact':
+                    # compact pattern already requires a letter after; take until next dash/tag.
+                    title_match = re.match(
+                        r'[\s._-]+(?P<title>.+?)(?:\s*[_\-[(].*|\s*-\s*\d{4}\b|\s*$)',
+                        after,
+                        re.IGNORECASE | re.DOTALL,
+                    )
+                if title_match:
+                    raw_title = cleanup(title_match.group('title'))
+                    if raw_title and len(raw_title) >= 3:
+                        episode_title = copy.copy(template[0])
+                        episode_title.name = 'episode_title'
+                        episode_title.value = raw_title
+                        to_append.append(episode_title)
+
+        return to_remove, to_append
+
+
+class EnsureDashSeparatedEpisodeTitle(Rule):
+    """Capture ``Show - Episode Title - tags`` when GuessIt left no episode_title.
+
+    Documentary rips often omit SxEx and only carry the episode title between
+    dashes. Title-priority matching in NameParser needs that field.
+    """
+
+    priority = POST_PROCESS
+    consequence = AppendMatch
+    pattern = re.compile(
+        r'(?is)^(?P<title>.+?)\s+[-–—]\s+(?P<episode_title>.+?)\s+[-–—]\s+'
+        r'(?P<tags>(?:.|\n)*)$'
+    )
+    # Show - Episode Title_Fr5.2008-12-27_clo2.ext
+    underscore_channel = re.compile(
+        r'(?is)^(?P<title>.+?)\s+[-–—]\s+(?P<episode_title>.+?)'
+        r'_(?P<channel>Fr\s?5|France\s?5|Arte|ARTE|TF1|M6)\b'
+    )
+    junk_title = re.compile(
+        r'(?i)^(hdtv|web[\s.-]?dl|webrip|bluray|dvdrip|doc(?:umentaire)?|fr|vf|vost'
+        r'|proper|repack|\d{3,4}p|x264|x265|h\.?264|h\.?265)$'
+    )
+
+    def when(self, matches, context):
+        """Evaluate the rule."""
+        if matches.named('episode_title'):
+            return
+        if matches.named('episode') or matches.named('absolute_episode'):
+            return
+
+        fileparts = matches.markers.named('path')
+        spans = (
+            [(part.start, part.end) for part in marker_sorted(fileparts, matches)]
+            if fileparts else [(0, len(matches.input_string))]
+        )
+
+        for start, end in spans:
+            chunk = matches.input_string[start:end]
+            chunk_no_ext = re.sub(r'\.[A-Za-z0-9]{2,4}$', '', chunk)
+            parsed = self.pattern.match(chunk_no_ext) or self.underscore_channel.match(chunk_no_ext)
+            if not parsed:
+                continue
+            episode_title = cleanup(parsed.group('episode_title'))
+            if not episode_title or self.junk_title.match(episode_title):
+                continue
+            if len(episode_title) < 8:
+                continue
+
+            template = matches.named('title') or matches.named('release_group')
+            if not template:
+                continue
+            new_title = copy.copy(template[0])
+            new_title.name = 'episode_title'
+            new_title.value = episode_title
+            new_title.start = start + parsed.start('episode_title')
+            new_title.end = start + parsed.end('episode_title')
+            return [new_title]
+
+        return
+
+
 def rules():
     """Return all custom rules to be applied to guessit default api.
 
@@ -2660,6 +3144,10 @@ def rules():
         PartsAsEpisodeNumbers,
         RemoveInvalidEpisodeSeparator,
         SeasonDashEpisodeNumbers,
+        FrenchEpisodeOfTotal,
+        FrenchBroadcastEpisodeMarkers,
+        EnsureDashSeparatedEpisodeTitle,
+        CleanupBroadcastFilenameTags,
         CreateAliasWithAlternativeTitles,
         CreateAliasWithCountryOrYear,
         FixTitlesThatExistOfAbsoluteEpisodeNumbers,

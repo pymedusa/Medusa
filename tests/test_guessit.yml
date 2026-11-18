@@ -4701,6 +4701,29 @@
   container: mp4
   type: episode
 
+# GuessIt expands S2-04 to seasons [2,3,4]; titled files are season+episode
+? Show Name - S2-04 - Episode Title (Fr.2013)_ARTE HD.2014-06-05_clo2.mp4
+: title: Show Name
+  season: 2
+  episode: 4
+  episode_title: Episode Title
+  language: fr
+  year: 2013
+  streaming_service: ARTE
+  other: HD
+  date: 2014-06-05
+  release_group: clo2
+  container: mp4
+  type: episode
+
+# Bare season packs stay as ranges (no episode title)
+? Show.Name.S01-04.1080p.mkv
+: title: Show Name
+  season: [1, 2, 3, 4]
+  screen_size: 1080p
+  container: mkv
+  type: episode
+
 ? Show Name - S11-01 - Episode Title (Group).mkv
 : title: Show Name
   season: 11
@@ -4737,4 +4760,178 @@
   absolute_episode: 1
   release_group: Episode Title
   container: mkv
+  type: episode
+
+# French NnLtt numbering: 01l12 means episode 1 of 12
+? Show Name - 01l12 - Episode Title (Fr.1997)_reenc.Web-ARTE HD.2015-12_clo2.mp4
+: title: Show Name
+  season: 1
+  episode: 1
+  episode_title: Episode Title
+  language: fr
+  year: 1997
+  source: Web
+  streaming_service: ARTE
+  other: [Reencoded, HD]
+  release_group: clo2
+  container: mp4
+  type: episode
+
+? Show Name - 12l12 - Episode Title (Fr.1997).mp4
+: title: Show Name
+  season: 1
+  episode: 12
+  episode_title: Episode Title
+  language: fr
+  year: 1997
+  container: mp4
+  type: episode
+
+# French Sx-NNltt / NxNNltt with optional plural (s) in the show title
+? Show Name(s) - S1-02l10 - Episode Title (Fr.2011)_Arte.2012-01-17_clo2.avi
+: title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Episode Title
+  language: fr
+  year: 2011
+  streaming_service: ARTE
+  date: 2012-01-17
+  release_group: clo2
+  container: avi
+  type: episode
+
+? Show Name(s) - 1x02l10 - Episode Title (Director Name) - ARTE (42m35s) [720p] {B59}.mkv
+: title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Episode Title
+  streaming_service: ARTE
+  duration: 42m35s
+  screen_size: 720p
+  release_group: B59
+  container: mkv
+  type: episode
+
+# Multipart labels like 1l2 / 2l2 must NOT become episode numbers
+? Show Name - Region Name - 2l2 Fr2.1997.avi
+: title: Show Name
+  alias: Show Name - Region Name - 2l2 Fr2
+  alternative_title: ['Region Name', '2l2 Fr2']
+  episode_title: Region Name
+  year: 1997
+  container: avi
+  type: episode
+
+# Broadcast FR tags: channel, duration, resolution, brace release group
+? Show Name - 1x02l10 - Episode Title - ARTE (42m35s) [720p] {B59}.mkv
+: title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Episode Title
+  streaming_service: ARTE
+  duration: 42m35s
+  screen_size: 720p
+  release_group: B59
+  container: mkv
+  type: episode
+
+# Duration/channel must not pollute release_group or alternative_title
+? Show Name - 2x02l05 - Long Episode Title Here - ARTE (52m14s) [720p].mkv
+: title: Show Name
+  season: 2
+  episode: 2
+  episode_title: Long Episode Title Here
+  streaming_service: ARTE
+  duration: 52m14s
+  screen_size: 720p
+  container: mkv
+  type: episode
+
+? Show Name - S2-01 - Episode Title (Fr.2013)_ARTE HD.2014-06-02.mp4
+: title: Show Name
+  season: 2
+  episode: 1
+  episode_title: Episode Title
+  language: fr
+  year: 2013
+  streaming_service: ARTE
+  other: HD
+  date: 2014-06-02
+  container: mp4
+  type: episode
+
+# Trailing clo2 is an expected release group
+? Show Name - S1-02l10 - Episode Title (Fr.2011)_Arte.2012-01-17_clo2.avi
+: title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Episode Title
+  language: fr
+  year: 2011
+  streaming_service: ARTE
+  date: 2012-01-17
+  release_group: clo2
+  container: avi
+  type: episode
+
+# French broadcast markers: NxNNbis, N, N, NNN, dash title, Fr5
+? Show Name - 3x03bis - Congo - Episode Title (extended to 82 minutes, aired 8-05-2015).mp4
+: title: Show Name
+  alias: Show Name - 3x03bis - Congo - Episode Title
+  alternative_title: ['3x03bis', 'Congo', 'Episode Title']
+  season: 3
+  episode: 3
+  episode_title: Congo - Episode Title
+  date: 2015-05-08
+  container: mp4
+  type: episode
+
+? Show Name - 901 - Episode Title Here (Fr 2016) [720P] Fr5.2016-06-28 Clo2.avi
+: title: Show Name
+  season: 9
+  episode: 1
+  episode_title: Episode Title Here
+  language: fr
+  year: 2016
+  screen_size: 720p
+  streaming_service: France 5
+  date: 2016-06-28
+  release_group: clo2
+  container: avi
+  type: episode
+
+? Show Name - 11, 10 - Episode Title Here - 2018 - France5 2018-12-30 - clo2 - DOC FR.mkv
+: title: Show Name
+  season: 11
+  episode: 10
+  episode_title: Episode Title Here
+  year: 2018
+  streaming_service: France 5
+  date: 2018-12-30
+  release_group: clo2
+  language: fr
+  container: mkv
+  type: episode
+
+? Show Name - Long Episode Title Without Numbers - HDTV - clo2 - DOC FR.mkv
+: title: Show Name
+  alternative_title: Long Episode Title Without Numbers
+  episode_title: Long Episode Title Without Numbers
+  source: HDTV
+  release_group: clo2
+  language: fr
+  container: mkv
+  type: episode
+
+? Show Name - Long Episode Title Without Numbers - 2012 - France5 20150131 - clo2 - DOC FR.mp4
+: title: Show Name
+  alternative_title: Long Episode Title Without Numbers
+  episode_title: Long Episode Title Without Numbers
+  year: 2012
+  streaming_service: France 5
+  date: 2015-01-31
+  release_group: clo2
+  language: fr
+  container: mp4
   type: episode
