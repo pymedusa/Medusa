@@ -341,7 +341,12 @@ class NameParser(object):
         return [], []
 
     def _parse_string(self, name):
-        guess = guessit.guessit(name, dict(show_type=self.show_type))
+        guess_options = {'show_type': self.show_type}
+        if self.series is not None:
+            # Protect numeric/dashed show titles (e.g. "39-45 : ...") when the
+            # series is already known, even if it is absent from app.showList.
+            guess_options['series'] = self.series
+        guess = guessit.guessit(name, guess_options)
 
         result = self.to_parse_result(name, guess)
         search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
