@@ -309,6 +309,9 @@ class MedusaApp(object):
         self.MIN_UPDATE_FREQUENCY = 1
 
         self.BACKLOG_DAYS = 7
+        # 0 disables throttling and queues the whole backlog at once (legacy behavior).
+        self.BACKLOG_BATCH_SIZE = 0
+        self.BACKLOG_BATCH_REFILL_THRESHOLD = 2
 
         self.ADD_SHOWS_WO_DIR = False
         self.CREATE_MISSING_SHOW_DIRS = False
