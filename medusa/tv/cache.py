@@ -56,6 +56,7 @@ class CacheDBConnection(db.DBConnection):
                     '    indexer NUMERIC,'
                     '    indexerid NUMERIC,'
                     '    url TEXT,'
+                    '    info_url TEXT,'
                     '    time NUMERIC,'
                     '    quality NUMERIC,'
                     '    release_group TEXT,'
@@ -96,6 +97,7 @@ class CacheDBConnection(db.DBConnection):
                 ('proper_tags', 'TEXT', None),
                 ('date_added', 'NUMERIC', 0),
                 ('indexer', 'NUMERIC', None),
+                ('info_url', 'TEXT', None),
             )
             for column, data_type, default in table:
                 # add columns to table if missing
@@ -436,6 +438,7 @@ class Cache(object):
 
             identifier = self._get_identifier(search_result)
             url = search_result.url
+            info_url = search_result.info_url
             seeders = search_result.seeders
             leechers = search_result.leechers
             size = search_result.size
@@ -445,13 +448,13 @@ class Cache(object):
                 log.debug('Added item: {0} to cache: {1} with url: {2}', name, self.provider_id, url)
                 return [
                     'INSERT INTO [{name}] '
-                    '   (identifier, name, season, episodes, indexerid, url, time, quality, '
+                    '   (identifier, name, season, episodes, indexerid, url, info_url, time, quality, '
                     '    release_group, version, seeders, leechers, size, pubdate, '
                     '    proper_tags, date_added, indexer ) '
-                    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
+                    'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
                         name=self.provider_id
                     ),
-                    [identifier, name, season, episode_text, parsed_result.series.series_id, url,
+                    [identifier, name, season, episode_text, parsed_result.series.series_id, url, info_url,
                      cur_timestamp, quality, release_group, version,
                      seeders, leechers, size, pubdate, proper_tags, cur_timestamp, parsed_result.series.indexer]
                 ]
@@ -459,13 +462,13 @@ class Cache(object):
                 log.debug('Updating item: {0} to cache: {1}', name, self.provider_id)
                 return [
                     'UPDATE [{name}] '
-                    'SET name=?, url=?, season=?, episodes=?, indexer=?, indexerid=?, '
+                    'SET name=?, url=?, info_url=?, season=?, episodes=?, indexer=?, indexerid=?, '
                     '    time=?, quality=?, release_group=?, version=?, '
                     '    seeders=?, leechers=?, size=?, pubdate=?, proper_tags=? '
                     'WHERE identifier=?'.format(
                         name=self.provider_id
                     ),
-                    [name, url, season, episode_text, parsed_result.series.indexer, parsed_result.series.series_id,
+                    [name, url, info_url, season, episode_text, parsed_result.series.indexer, parsed_result.series.series_id,
                      cur_timestamp, quality, release_group, version,
                      seeders, leechers, size, pubdate, proper_tags, identifier]
                 ]

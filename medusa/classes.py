@@ -59,6 +59,8 @@ class SearchResult(object):
         self.episodes = None
         # URL to the NZB/torrent file
         self.url = ''
+        # URL to the release info page on the indexer (from Newznab/Torznab <comments>)
+        self.info_url = ''
         # used by some providers to store extra info associated with the result
         self.extra_info = []
         # quality of the release
@@ -273,6 +275,7 @@ class SearchResult(object):
         self._create_episode_objects()
 
         self.name, self.url = self.provider._get_title_and_url(self.item)
+        self.info_url = self.provider._get_info_url(self.item)
         self.seeders, self.leechers = self.provider._get_result_info(self.item)
         self.size = self.provider._get_size(self.item)
         self.pubdate = self.provider._get_pubdate(self.item)
@@ -311,6 +314,7 @@ class SearchResult(object):
         cached_result = self.cache
         self.episodes = self._episodes_from_cache()
         self.url = cached_result['url']
+        self.info_url = cached_result['info_url'] or ''
         self.quality = int(cached_result['quality'])
         self.name = cached_result['name']
         self.size = int(cached_result['size'])
