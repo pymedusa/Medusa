@@ -104,6 +104,25 @@ class SearchQueue(generic_queue.GenericQueue):
                 length['backlog'] += 1
         return length
 
+    def backlog_pending(self):
+        """Count backlog searches that are queued or still running.
+
+        The snapshot is taken under the queue lock, the same one ``run()`` holds
+        while it pops an item, assigns ``current_item`` and starts it, so an item
+        can never be observed as neither queued nor current.
+        """
+        with self.lock:
+            pending = sum(1 for cur_item in self.queue if isinstance(cur_item, BacklogQueueItem))
+            current_item = self.current_item
+
+        if isinstance(current_item, BacklogQueueItem):
+            # Not started yet (start_time unset) or still running both count;
+            # a finished item has start_time set and inProgress cleared.
+            if current_item.inProgress or current_item.start_time is None:
+                pending += 1
+
+        return pending
+
     def add_item(self, item):
         """Add item to queue."""
         if isinstance(item, (DailySearchQueueItem, ProperSearchQueueItem)):
@@ -540,8 +559,13 @@ class SnatchQueueItem(generic_queue.QueueItem):
 class BacklogQueueItem(generic_queue.QueueItem):
     """Backlog queue item class."""
 
-    def __init__(self, show, segment):
-        """Initialize the class."""
+    def __init__(self, show, segment, backlog_cursor_key=None):
+        """Initialize the class.
+
+        :param backlog_cursor_key: Position of this segment in a resumable full
+            backlog pass. Persisted once the search ran; ``None`` for targeted,
+            limited or legacy backlog items, which never touch the cursor.
+        """
         generic_queue.QueueItem.__init__(self, u'Backlog', BACKLOG_SEARCH)
         self.priority = generic_queue.QueuePriorities.LOW
         self.name = 'BACKLOG-{indexer_id}'.format(indexer_id=show.indexerid)
@@ -550,6 +574,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
 
         self.show = show
         self.segment = segment
+        self.backlog_cursor_key = backlog_cursor_key
 
         self.to_json.update({
             'show': self.show.to_json(),
@@ -629,7 +654,22 @@ class BacklogQueueItem(generic_queue.QueueItem):
         # Push an update to any open Web UIs through the WebSocket
         ws.Message('QueueItemUpdate', self.to_json).push()
 
+        backlog_searcher = app.backlog_search_scheduler.action if app.backlog_search_scheduler else None
+
+        # Record completion before finish(): once inProgress is cleared the
+        # searcher may see the queue as drained, so the cursor must already be saved.
+        if backlog_searcher is not None and self.backlog_cursor_key is not None:
+            try:
+                backlog_searcher.record_completed(self.backlog_cursor_key)
+            except Exception as error:
+                log.exception('Unable to persist the backlog cursor {key!r}: {error!r}',
+                              {'key': self.backlog_cursor_key, 'error': error})
+
         self.finish()
+
+        # Let the backlog searcher queue its next batch without waiting for a poll.
+        if backlog_searcher is not None:
+            backlog_searcher.notify_capacity()
 
 
 class FailedQueueItem(generic_queue.QueueItem):
