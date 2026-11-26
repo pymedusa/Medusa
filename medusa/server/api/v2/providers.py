@@ -10,7 +10,7 @@ from datetime import datetime
 from dateutil import parser
 
 from medusa import app, providers
-from medusa.helper.exceptions import AuthException
+from medusa.helper.exceptions import AuthException, ProviderSearchTimeout
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers import get_provider_class
 from medusa.providers.generic_provider import GenericProvider
@@ -29,6 +29,17 @@ from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+def _deep_merge(current, patch):
+    """Recursively merge a partial settings dict into the current settings, in place."""
+    if not isinstance(patch, dict):
+        raise ValueError('Expected a provider settings object')
+    for key, value in patch.items():
+        if isinstance(current.get(key), dict):
+            _deep_merge(current[key], value)
+        else:
+            current[key] = value
 
 
 class ProvidersHandler(BaseRequestHandler):
@@ -121,6 +132,15 @@ class ProvidersHandler(BaseRequestHandler):
         provider = get_provider_class(identifier)
         if not provider:
             return self._bad_request('Could not locate provider by id')
+
+        if isinstance(provider, TorznabProvider):
+            # The shared setters expect a complete configuration, including nested search settings.
+            current = provider.to_json()['config']
+            try:
+                _deep_merge(current, data)
+            except ValueError as error:
+                return self._bad_request(str(error))
+            data = current
 
         self._set_common_settings(provider, data)
         if isinstance(provider, TorrentProvider):
@@ -374,6 +394,8 @@ class ProvidersHandler(BaseRequestHandler):
             result = provider.search(dict(RSS=['']))
         except AuthException as error:
             return self._unauthorized(str(error))
+        except ProviderSearchTimeout as error:
+            return self._gateway_timeout(str(error))
 
         if result and len(result):
             return self._created(f'{provider.name} returned {len(result)} results')
@@ -491,6 +513,9 @@ class ProvidersHandler(BaseRequestHandler):
             except (AttributeError, KeyError, ValueError):
                 provider.search_delay = 480
 
+        if hasattr(provider, 'search_timeout') and 'timeout' in config.get('search', {}):
+            provider.search_timeout = config['search']['timeout']
+
         # Newznab specific
         if hasattr(provider, 'cat_ids'):
             try:
@@ -519,7 +544,9 @@ class ProvidersHandler(BaseRequestHandler):
             except (AttributeError, KeyError, ValueError):
                 provider.minleech = 0
 
-        if hasattr(provider, 'ratio'):
+        # A partial Torznab PATCH is merged into to_json(), which reports an unset ratio as None.
+        # Keep it unset instead of turning it into -1.
+        if hasattr(provider, 'ratio') and not (isinstance(provider, TorznabProvider) and config.get('ratio') is None):
             try:
                 ratio = config['ratio']
                 provider.ratio = (ratio, -1)[ratio < 0]

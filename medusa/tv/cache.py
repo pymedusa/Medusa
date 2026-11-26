@@ -17,7 +17,7 @@ from medusa import (
     db
 )
 from medusa.helper.common import episode_num
-from medusa.helper.exceptions import AuthException
+from medusa.helper.exceptions import AuthException, ProviderSearchTimeout
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import (
     InvalidNameException,
@@ -276,6 +276,9 @@ class Cache(object):
 
         except AuthException as error:
             log.error('Authentication error: {0!r}', error)
+        except ProviderSearchTimeout:
+            log.warning('RSS search timed out for {0} (read timeout: {1}s)', self.provider.name,
+                        getattr(self.provider, 'search_timeout', None))
 
     def update_cache_manual_search(self, manual_data=None):
         """Update cache using manual search results."""

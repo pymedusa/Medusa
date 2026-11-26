@@ -44,6 +44,10 @@ class ApplicationException(Exception):
     """
 
 
+class ProviderSearchTimeout(ApplicationException):
+    """The provider did not return a search response within its HTTP read timeout."""
+
+
 class AuthException(ApplicationException):
     """
     Authentication information is incorrect
