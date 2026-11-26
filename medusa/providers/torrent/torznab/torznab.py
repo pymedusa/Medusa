@@ -34,13 +34,20 @@ log.logger.addHandler(logging.NullHandler())
 
 INDEXERS_PARAM = {INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid', INDEXER_TMDB: 'tmdbid'}
 
+# Search read timeout bounds, in seconds. Some indexers (e.g. aMuTorrent with ED2K/Kad) answer slowly.
+DEFAULT_SEARCH_TIMEOUT = 30
+MIN_SEARCH_TIMEOUT = 30
+MAX_SEARCH_TIMEOUT = 600
+SEARCH_CONNECT_TIMEOUT = 30
+
 
 class TorznabProvider(TorrentProvider):
     """Generic provider for built in and custom providers who expose a Torznab compatible api."""
 
     def __init__(self, name, url=None, api_key=None, cat_ids=None, cap_tv_search=None,
                  search_mode='eponly', search_fallback=False, enable_daily=True,
-                 enable_backlog=False, enable_manualsearch=False, manager=None):
+                 enable_backlog=False, enable_manualsearch=False, manager=None,
+                 search_timeout=DEFAULT_SEARCH_TIMEOUT):
         """Initialize the class."""
         super(TorznabProvider, self).__init__(name)
 
@@ -55,6 +62,7 @@ class TorznabProvider(TorrentProvider):
         self.enable_daily = enable_daily
         self.enable_backlog = enable_backlog
         self.enable_manualsearch = enable_manualsearch
+        self.search_timeout = search_timeout
 
         # For now apply the additional season search string for all torznab providers.
         # If we want to limited this per provider, I suggest using a dict, with provider: [list of season templates]
@@ -72,6 +80,25 @@ class TorznabProvider(TorrentProvider):
         self.id_manager = self.name
 
         self.cache = tv.Cache(self)
+
+    @property
+    def search_timeout(self):
+        """Return the HTTP read timeout in seconds for indexer searches."""
+        return self._search_timeout
+
+    @search_timeout.setter
+    def search_timeout(self, value):
+        try:
+            timeout = int(value) if isinstance(value, (int, str)) else DEFAULT_SEARCH_TIMEOUT
+        except ValueError:
+            timeout = DEFAULT_SEARCH_TIMEOUT
+        self._search_timeout = max(MIN_SEARCH_TIMEOUT, min(timeout, MAX_SEARCH_TIMEOUT))
+
+    def to_json(self):
+        """Include the per-indexer search timeout in provider settings."""
+        data = super(TorznabProvider, self).to_json()
+        data['config']['search']['timeout'] = self.search_timeout
+        return data
 
     def search(self, search_strings, age=0, ep_obj=None, force_query=False, manual_search=False, **kwargs):
         """
@@ -143,7 +170,8 @@ class TorznabProvider(TorrentProvider):
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string
 
-                response = self.session.get(urljoin(self.url, 'api'), params=search_params)
+                response = self.session.get(urljoin(self.url, 'api'), params=search_params,
+                                            timeout=(SEARCH_CONNECT_TIMEOUT, self.search_timeout), raise_search_timeout=True)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue

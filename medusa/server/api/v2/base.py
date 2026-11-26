@@ -288,6 +288,9 @@ class BaseRequestHandler(RequestHandler):
     def _internal_server_error(self, error='Internal Server Error'):
         return self.api_response(500, error=error)
 
+    def _gateway_timeout(self, error):
+        return self.api_response(504, error=error)
+
     def _not_implemented(self):
         return self.api_response(501)
 

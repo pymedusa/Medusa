@@ -17,7 +17,7 @@ from builtins import str
 from medusa import app, common, db, failed_history, helpers, history, ui, ws
 from medusa.common import DOWNLOADED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, SUBTITLED
 from medusa.helper.common import enabled_providers
-from medusa.helper.exceptions import AuthException, ex
+from medusa.helper.exceptions import AuthException, ProviderSearchTimeout, ex
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
@@ -848,6 +848,11 @@ class ProperSearchQueueItem(generic_queue.QueueItem):
                 cur_propers = cur_provider.find_propers(recently_aired)
             except AuthException as e:
                 log.debug('Authentication error: {error}', {'error': ex(e)})
+                continue
+            except ProviderSearchTimeout:
+                log.warning('PROPER search timed out for {provider} (read timeout: {timeout}s)',
+                            {'provider': cur_provider.name,
+                             'timeout': getattr(cur_provider, 'search_timeout', None)})
                 continue
 
             # if they haven't been added by a different provider than add the proper to the list

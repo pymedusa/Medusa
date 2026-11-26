@@ -52,6 +52,18 @@
                 :id="`${editProvider.id}_min_leech`"
             />
 
+            <config-textbox-number
+                v-if="'timeout' in editProvider.config.search"
+                v-model="editProvider.config.search.timeout"
+                label="Search read timeout (seconds)"
+                :min="30"
+                :max="600"
+                :step="1"
+                :id="`${editProvider.id}_search_timeout`"
+            >
+                <p>HTTP read timeout for Torznab search requests. Default 30; range 30–600. Use a higher value for slow indexers (for example aMuTorrent / ED2K).</p>
+            </config-textbox-number>
+
             <config-toggle-slider v-if="'confirmed' in editProvider.config" v-model="editProvider.config.confirmed" label="Confirmed downloads" :name="`${editProvider.id}_confirmed`" :id="`${editProvider.id}_confirmed`">
                 <p>only download torrents from trusted or verified uploaders ?</p>
             </config-toggle-slider>

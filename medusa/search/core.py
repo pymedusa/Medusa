@@ -44,6 +44,7 @@ from medusa.helper.common import (
 )
 from medusa.helper.exceptions import (
     AuthException,
+    ProviderSearchTimeout,
     ex,
 )
 from medusa.helpers import chmod_as_parent
@@ -741,6 +742,10 @@ def search_providers(series_obj, episodes, forced_search=False, down_cur_quality
 
             except AuthException as error:
                 log.error(u'Authentication error: {0!r}', error)
+                break
+            except ProviderSearchTimeout:
+                log.warning('Search timed out for {0} (read timeout: {1}s)', cur_provider.name,
+                            getattr(cur_provider, 'search_timeout', None))
                 break
 
             if not needed_eps and found_results:

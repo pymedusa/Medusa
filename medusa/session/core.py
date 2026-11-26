@@ -10,6 +10,7 @@ import certifi
 
 import medusa.common
 from medusa.app import app
+from medusa.helper.exceptions import ProviderSearchTimeout
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session import factory, handlers, hooks
 
@@ -17,6 +18,8 @@ import requests
 
 from six.moves import collections_abc
 from six.moves.urllib.parse import urlparse
+
+from urllib3.exceptions import ReadTimeoutError
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -175,7 +178,8 @@ class MedusaSafeSession(MedusaSession):
         """Initialize request.session."""
         super(MedusaSafeSession, self).__init__(**kwargs)
 
-    def request(self, method, url, data=None, params=None, headers=None, timeout=30, verify=True, **kwargs):
+    def request(self, method, url, data=None, params=None, headers=None, timeout=30, verify=True,
+                raise_search_timeout=False, **kwargs):
         """Overwrite request, for adding basic exception handling."""
         resp = None
         try:
@@ -187,6 +191,11 @@ class MedusaSafeSession(MedusaSession):
                       url=url, err_msg=error)
             return resp or error.response
         except requests.exceptions.RequestException as error:
+            # urllib3 raises ReadTimeoutError when a read (response headers or body) exceeds the
+            # read timeout; requests reports it wrapped in ConnectionError/ChunkedEncodingError.
+            if raise_search_timeout and (isinstance(error, requests.exceptions.ReadTimeout)
+                                         or any(isinstance(arg, ReadTimeoutError) for arg in error.args)):
+                raise ProviderSearchTimeout('Provider search timed out') from None
             log.debug(u'Error requesting url {url} Error: {err_msg}', url=url, err_msg=error)
             return resp or error.response
         except Exception as error:

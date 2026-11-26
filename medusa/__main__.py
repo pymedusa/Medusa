@@ -88,7 +88,7 @@ from medusa.init.filesystem import is_valid_encoding
 from medusa.providers.generic_provider import GenericProvider
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
-from medusa.providers.torrent.torznab.torznab import TorznabProvider
+from medusa.providers.torrent.torznab.torznab import DEFAULT_SEARCH_TIMEOUT, TorznabProvider
 from medusa.queues import show_queue
 from medusa.queues.event_queue import Events
 from medusa.schedulers import (
@@ -1194,6 +1194,7 @@ class Application(object):
 
                 if isinstance(provider, TorznabProvider):
                     load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='normal')
+                    load_provider_setting(app.CFG, provider, 'int', 'search_timeout', DEFAULT_SEARCH_TIMEOUT)
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', split_value=',')
                     load_provider_setting(app.CFG, provider, 'list', 'cap_tv_search', '', split_value=',')
                     load_provider_setting(app.CFG, provider, 'string', 'manager', '')
@@ -1824,7 +1825,7 @@ class Application(object):
                 'all': [
                     'name', 'url', 'cat_ids', 'api_key', 'username', 'search_mode', 'search_fallback',
                     'enable_daily', 'enable_backlog', 'enable_manualsearch', 'enable_search_delay',
-                    'search_delay', 'manager', 'id_manager'
+                    'search_delay', 'manager', 'id_manager', 'search_timeout'
                 ],
                 'encrypted': [
                     'password',
