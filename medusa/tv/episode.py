@@ -62,6 +62,7 @@ from medusa.helper.exceptions import (
     NoNFOException,
     ex,
 )
+from medusa.helper.month_names import get_month_name
 from medusa.indexers.api import indexerApi
 from medusa.indexers.config import indexerConfig
 from medusa.indexers.exceptions import (
@@ -1604,10 +1605,13 @@ class Episode(TV):
             '%A_D': us(str(self.airdate)),
             '%A-D': str(self.airdate),
             '%Y': str(self.airdate.year),
+            # Two-digit year. Not '%y': lowercase tokens are the lowercase
+            # variants of the uppercase ones, so '%y' must keep meaning '%Y'.
+            '%YY': '%02d' % (self.airdate.year % 100),
             '%M': str(self.airdate.month),
             '%D': str(self.airdate.day),
-            '%Mm': str(self.airdate.strftime('%b')),
-            '%MM': str(self.airdate.strftime('%B')),
+            '%Mm': get_month_name(self.airdate.month, abbreviated=True),
+            '%MM': get_month_name(self.airdate.month, abbreviated=False),
             '%CY': str(date.today().year),
             '%CM': str(date.today().month),
             '%CD': str(date.today().day),

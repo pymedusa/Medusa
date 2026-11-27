@@ -35,6 +35,8 @@ import re
 from guessit.rules.common.comparators import marker_sorted
 from guessit.rules.common.formatters import cleanup
 
+from medusa.name_parser.rules.month_date import CreateDateFromMonthYearRelease
+
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
@@ -2664,6 +2666,8 @@ def rules():
         CreateAliasWithCountryOrYear,
         FixTitlesThatExistOfAbsoluteEpisodeNumbers,
         FixTitlesThatExistOfYearNumbers,
+        # After absolute/season cleanup: monthly MonthName.YYYY / MM.YYYY releases
+        CreateDateFromMonthYearRelease,
         ReleaseGroupPostProcessor,
         DemoteOrphanReleaseGroupToEpisodeTitle,
         RemoveTechBrandEpisodeTitle,

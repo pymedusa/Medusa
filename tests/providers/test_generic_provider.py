@@ -440,3 +440,183 @@ def test_create_search_string_anime(p, create_tvshow, create_tvepisode, monkeypa
     actual = search_string['Episode']
 
     assert expected == actual
+
+
+class _MonthParseResult(object):
+    def __init__(self, season_number, episode_numbers):
+        self.season_number = season_number
+        self.episode_numbers = episode_numbers
+
+
+class _MonthSearchResult(object):
+    def __init__(self, parsed_result):
+        self.name = 'Show.Name.Mai.2016.FRENCH.HDTV.x264-GROUP'
+        self.parsed_result = parsed_result
+        self.actual_season = None
+        self.actual_episodes = None
+
+
+def test_month_precision_result_uses_episode_resolved_by_name_parser():
+    """A month-only release resolved to an episode airing mid-month must not be rejected."""
+    search_result = _MonthSearchResult(_MonthParseResult(2016, [5]))
+
+    assert GenericProvider._resolve_month_precision_result(search_result) is True
+    assert search_result.actual_season == 2016
+    assert search_result.actual_episodes == [5]
+
+
+@pytest.mark.parametrize('season_number,episode_numbers', [
+    (None, [5]),
+    (2016, []),
+    (None, []),
+])
+def test_month_precision_result_without_resolved_episode_is_skipped(season_number, episode_numbers):
+    search_result = _MonthSearchResult(_MonthParseResult(season_number, episode_numbers))
+
+    assert GenericProvider._resolve_month_precision_result(search_result) is False
+    assert search_result.actual_season is None
+    assert search_result.actual_episodes is None
+
+
+def test_find_search_results_keeps_numeric_month_year_for_air_by_date(
+        monkeypatch, create_tvshow, create_tvepisode, search_provider):
+    """Provider search opts into air-by-date parsing so 05.2016 resolves mid-month."""
+    from medusa import app, name_cache
+
+    series = create_tvshow(name='Show Name', indexerid=42, lang='en', air_by_date=1, anime=0, scene=0)
+    episode = create_tvepisode(series, 2016, 5)
+    release = 'Show.Name.05.2016.HDTV.x264-GROUP'
+    # Unique episode aired after day 1 of the month (first Saturday of May 2016).
+    first_saturday = date(2016, 5, 7)
+
+    class FakeDB(object):
+        def select(self, query, args=None):
+            args = args or []
+            if 'airdate = ?' in query and 'airdate >=' not in query:
+                return []
+            if 'airdate >= ?' in query and 'airdate < ?' in query:
+                start, end = args[2], args[3]
+                if start <= first_saturday.toordinal() < end:
+                    return [{'season': 2016, 'episode': 5}]
+            return []
+
+        def mass_action(self, *_args, **_kwargs):
+            return []
+
+    monkeypatch.setattr(app, 'showList', [series])
+    monkeypatch.setattr(name_cache, 'name_cache', {
+        'show name': (series.indexer, series.indexerid),
+    })
+    monkeypatch.setattr(name_cache, 'addNameToCache', lambda *args, **kwargs: None)
+    monkeypatch.setattr('medusa.name_parser.parser.db.DBConnection', FakeDB)
+    monkeypatch.setattr('medusa.providers.generic_provider.DBConnection', FakeDB)
+
+    provider = _provider_month_search_env(monkeypatch, search_provider, series, release, FakeDB)
+    results = provider.find_search_results(series, [episode], 'eponly')
+    assert 5 in results
+    retained = results[5][0]
+    assert retained.actual_season == 2016
+    assert retained.actual_episodes == [5]
+    assert retained.parsed_result.date_precision == 'month'
+    assert retained.parsed_result.air_date == date(2016, 5, 1)
+
+
+def _provider_month_search_env(monkeypatch, search_provider, series, release, fake_db):
+    """Wire a provider that returns one release for find_search_results tests."""
+    from medusa.name_parser.parser import name_parser_cache
+
+    # Drop parser entries left by other tests (e.g. series=None under air_by_date:).
+    name_parser_cache.clear()
+
+    class ProviderCache(object):
+        def add_cache_entry(self, *_args, **_kwargs):
+            return None
+
+        def _get_db(self):
+            return fake_db()
+
+    provider = search_provider()
+    provider.cache = ProviderCache()
+    monkeypatch.setattr(provider, '_check_auth', lambda: True)
+    monkeypatch.setattr(
+        provider, '_get_episode_search_strings',
+        lambda ep: [{'Episode': [series.name]}],
+    )
+    monkeypatch.setattr(
+        provider, 'search',
+        lambda *args, **kwargs: [{'title': release, 'link': 'http://example/1'}],
+    )
+    monkeypatch.setattr(
+        provider, '_get_title_and_url',
+        lambda item: (item.get('title') or release, item.get('link') or ''),
+    )
+    monkeypatch.setattr(provider, '_get_result_info', lambda item: (0, 0))
+    monkeypatch.setattr(provider, '_get_size', lambda item: 1000)
+    monkeypatch.setattr(provider, '_get_pubdate', lambda item: None)
+    return provider
+
+
+def test_find_search_results_rejects_other_series_month_pack(
+        monkeypatch, create_tvshow, create_tvepisode, search_provider):
+    """A monthly pack that maps to another known series must not be kept."""
+    from medusa import app, name_cache
+
+    series = create_tvshow(name='Show Name', indexerid=42, air_by_date=1, anime=0, scene=0)
+    other = create_tvshow(name='Other Show', indexerid=99, air_by_date=1, anime=0, scene=0)
+    episode = create_tvepisode(series, 2016, 5)
+    release = 'Other.Show.05.2016.HDTV.x264-GROUP'
+
+    class FakeDB(object):
+        def select(self, query, args=None):
+            return []
+
+        def mass_action(self, *_args, **_kwargs):
+            return []
+
+    monkeypatch.setattr(app, 'showList', [series, other])
+    monkeypatch.setattr(name_cache, 'name_cache', {
+        'show name': (series.indexer, series.indexerid),
+        'other show': (other.indexer, other.indexerid),
+    })
+    monkeypatch.setattr(name_cache, 'addNameToCache', lambda *args, **kwargs: None)
+    monkeypatch.setattr('medusa.name_parser.parser.db.DBConnection', FakeDB)
+    monkeypatch.setattr('medusa.providers.generic_provider.DBConnection', FakeDB)
+
+    provider = _provider_month_search_env(monkeypatch, search_provider, series, release, FakeDB)
+    results = provider.find_search_results(series, [episode], 'eponly')
+    assert results == {}
+
+
+def test_find_search_results_rejects_unknown_series_month_pack(
+        monkeypatch, create_tvshow, create_tvepisode, search_provider):
+    """An unknown title must not be attributed to the searched air-by-date series."""
+    from medusa import app, name_cache
+
+    series = create_tvshow(name='Show Name', indexerid=42, air_by_date=1, anime=0, scene=0)
+    episode = create_tvepisode(series, 2016, 5)
+    release = 'Unknown.Show.05.2016.HDTV.x264-GROUP'
+    first_saturday = date(2016, 5, 7)
+
+    class FakeDB(object):
+        def select(self, query, args=None):
+            args = args or []
+            if 'airdate >= ?' in query and 'airdate < ?' in query:
+                start, end = args[2], args[3]
+                if start <= first_saturday.toordinal() < end:
+                    return [{'season': 2016, 'episode': 5}]
+            return []
+
+        def mass_action(self, *_args, **_kwargs):
+            return []
+
+    monkeypatch.setattr(app, 'showList', [series])
+    monkeypatch.setattr(name_cache, 'name_cache', {
+        'show name': (series.indexer, series.indexerid),
+    })
+    monkeypatch.setattr(name_cache, 'addNameToCache', lambda *args, **kwargs: None)
+    monkeypatch.setattr('medusa.name_parser.parser.db.DBConnection', FakeDB)
+    monkeypatch.setattr('medusa.providers.generic_provider.DBConnection', FakeDB)
+
+    provider = _provider_month_search_env(monkeypatch, search_provider, series, release, FakeDB)
+    results = provider.find_search_results(series, [episode], 'eponly')
+    assert results == {}
