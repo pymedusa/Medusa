@@ -341,7 +341,12 @@ class NameParser(object):
         return [], []
 
     def _parse_string(self, name):
-        guess = guessit.guessit(name, dict(show_type=self.show_type))
+        guess_options = {'show_type': self.show_type}
+        if self.series is not None:
+            # Protect numeric/dashed show titles (e.g. "39-45 : ...") when the
+            # series is already known, even if it is absent from app.showList.
+            guess_options['series'] = self.series
+        guess = guessit.guessit(name, guess_options)
 
         result = self.to_parse_result(name, guess)
         search_series = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
@@ -437,6 +442,20 @@ class NameParser(object):
         """Remove all names from given indexer and indexer_id."""
         name_parser_cache.remove_by_indexer(indexer, indexer_id)
 
+    def _cache_name(self, name):
+        """Build a cache key that includes series context when present.
+
+        Series-aware parsing can change GuessIt options (e.g. expected_title), so
+        results must not be reused across different series contexts.
+        """
+        if self.series is None:
+            return name
+        return '{indexer}:{series_id}:{name}'.format(
+            indexer=self.series.indexer,
+            series_id=self.series.indexerid,
+            name=name,
+        )
+
     def parse(self, name, cache_result=True, use_cache=True):
         """Parse the name into a ParseResult.
 
@@ -450,12 +469,13 @@ class NameParser(object):
         :rtype: ParseResult
         """
         name = helpers.unicodify(name)
+        cache_name = self._cache_name(name)
 
         if self.naming_pattern:
             cache_result = False
 
         if use_cache:
-            cached = name_parser_cache.get(name)
+            cached = name_parser_cache.get(cache_name)
             if cached:
                 return cached
 
@@ -467,7 +487,7 @@ class NameParser(object):
         self.assert_supported(result)
 
         if cache_result:
-            name_parser_cache.add(name, result)
+            name_parser_cache.add(cache_name, result)
             log.debug('Parsed {name} into {result} and added to cache', {'name': name, 'result': result})
         else:
             log.debug('Parsed {name} into {result}', {'name': name, 'result': result})
