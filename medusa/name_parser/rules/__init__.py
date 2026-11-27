@@ -9,7 +9,9 @@ from guessit.api import default_api
 from medusa.name_parser.rules.expected_patch import apply_expected_value_patch
 from medusa.name_parser.rules.properties import (
     blacklist,
+    broadcast_channel,
     container,
+    duration,
     other,
     screen_size,
     source
@@ -24,5 +26,7 @@ default_api.rebulk.rebulk(blacklist())
 default_api.rebulk.rebulk(source())
 default_api.rebulk.rebulk(screen_size())
 default_api.rebulk.rebulk(other())
+default_api.rebulk.rebulk(duration())
+default_api.rebulk.rebulk(broadcast_channel())
 default_api.rebulk.rebulk(container())
 default_api.rebulk.rebulk(rules())
