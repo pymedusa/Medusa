@@ -4701,8 +4701,34 @@
   container: mp4
   type: episode
 
+# GuessIt expands S2-04 to seasons [2,3,4]; titled files are season+episode
+? Show Name - S2-04 - Episode Title (Fr.2016)_TF1 HD.2017-03-09-GRP.mp4
+: options: {contextual_manual: true}
+  title: Show Name
+  season: 2
+  episode: 4
+  episode_title: Episode Title
+  language: fr
+  year: 2016
+  streaming_service: TF1
+  other: HD
+  date: 2017-03-09
+  release_group: GRP
+  container: mp4
+  type: episode
+
+# Bare season packs stay as ranges (no episode title)
+? Show.Name.S01-04.1080p.mkv
+: options: {contextual_manual: true}
+  title: Show Name
+  season: [1, 2, 3, 4]
+  screen_size: 1080p
+  container: mkv
+  type: episode
+
 ? Show Name - S11-01 - Episode Title (Group).mkv
-: title: Show Name
+: options: {contextual_manual: true}
+  title: Show Name
   season: 11
   episode: 1
   episode_title: Episode Title
@@ -4711,7 +4737,8 @@
   type: episode
 
 ? /tv/Show Name (2012)/Show Name S07/Show Name - S7-01 - Episode Title.mkv
-: title: Show Name
+: options: {contextual_manual: true}
+  title: Show Name
   alias: Show Name 2012
   year: 2012
   season: 7
@@ -4722,7 +4749,8 @@
 
 # Folder season disagrees with S9-05: keep folder season, do not invent S09E05
 ? /tv/Show Name (2012)/Show Name S10/Show Name - S9-05 - Episode Title.mkv
-: title: Show Name
+: options: {contextual_manual: true}
+  title: Show Name
   alias: Show Name 2012
   year: 2012
   season: 10
@@ -4732,9 +4760,199 @@
 
 # Alphanumeric glued before Sx-yy: lookbehind must reject (no invented season)
 ? PrefixS2-01 - Episode Title.mkv
-: title: PrefixS2
+: options: {contextual_manual: true}
+  title: PrefixS2
   episode: 1
   absolute_episode: 1
   release_group: Episode Title
   container: mkv
+  type: episode
+
+# French NnLtt numbering: 01l12 means episode 1 of 12
+? Show Name - 01l12 - Episode Title (Fr.1999)_reenc.Web-M6 HD-GRP.mp4
+: options: {contextual_manual: true}
+  title: Show Name
+  season: 1
+  episode: 1
+  episode_title: Episode Title
+  language: fr
+  year: 1999
+  source: Web
+  streaming_service: M6
+  other: [Reencoded, HD]
+  release_group: GRP
+  container: mp4
+  type: episode
+
+? Show Name - 12l12 - Episode Title (Fr.1999).mp4
+: options: {contextual_manual: true}
+  title: Show Name
+  season: 1
+  episode: 12
+  episode_title: Episode Title
+  language: fr
+  year: 1999
+  container: mp4
+  type: episode
+
+# French Sx-NNltt / NxNNltt with optional plural (s) in the show title
+? Show Name(s) - S1-02l10 - Episode Title (Fr.2014)_M6.2015-02-11-GRP.avi
+: options: {contextual_manual: true}
+  title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Episode Title
+  language: fr
+  year: 2014
+  streaming_service: M6
+  date: 2015-02-11
+  release_group: GRP
+  container: avi
+  type: episode
+
+? Show Name(s) - 1x02l10 - Episode Title (Author Name) - TF1 (41m20s) [720p] {GRP}.mkv
+: options: {contextual_manual: true}
+  title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Episode Title
+  streaming_service: TF1
+  duration: 41m20s
+  screen_size: 720p
+  release_group: GRP
+  container: mkv
+  type: episode
+
+# Multipart labels like 1l2 / 2l2 must NOT become episode numbers
+? Show Name - Place Name - 2l2 Fr2.1999.avi
+: options: {contextual_manual: true}
+  title: Show Name
+  alias: Show Name - Place Name - 2l2 Fr2
+  alternative_title: ['Place Name', '2l2 Fr2']
+  episode_title: Place Name
+  year: 1999
+  container: avi
+  type: episode
+
+# Broadcast FR tags: channel, duration, resolution, brace release group
+? Show Name - 1x02l10 - Episode Title - M6 (43m05s) [720p] {GRP}.mkv
+: options: {contextual_manual: true}
+  title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Episode Title
+  streaming_service: M6
+  duration: 43m05s
+  screen_size: 720p
+  release_group: GRP
+  container: mkv
+  type: episode
+
+# Duration/channel must not pollute release_group or alternative_title
+? Show Name - 2x02l05 - Long Episode Title Here - TF1 (50m05s) [720p].mkv
+: options: {contextual_manual: true}
+  title: Show Name
+  season: 2
+  episode: 2
+  episode_title: Long Episode Title Here
+  streaming_service: TF1
+  duration: 50m05s
+  screen_size: 720p
+  container: mkv
+  type: episode
+
+? Show Name - S2-01 - Episode Title (Fr.2016)_M6 HD.2017-03-02.mp4
+: options: {contextual_manual: true}
+  title: Show Name
+  season: 2
+  episode: 1
+  episode_title: Episode Title
+  language: fr
+  year: 2016
+  streaming_service: M6
+  other: HD
+  date: 2017-03-02
+  container: mp4
+  type: episode
+
+# Channel and broadcast date before a scene-style release group
+? Show Name - S1-03l10 - Episode Title (Fr.2014)_TF1.2015-02-18-GRP.avi
+: options: {contextual_manual: true}
+  title: Show Name
+  season: 1
+  episode: 3
+  episode_title: Episode Title
+  language: fr
+  year: 2014
+  streaming_service: TF1
+  date: 2015-02-18
+  release_group: GRP
+  container: avi
+  type: episode
+
+# French broadcast markers: NxNNbis, N, N, NNN, dash title, Fr5
+? Show Name - 3x03bis - Place - Episode Title (extended to 75 minutes, aired 9-04-2016).mp4
+: options: {contextual_manual: true}
+  title: Show Name
+  alias: Show Name - 3x03bis - Place - Episode Title
+  alternative_title: ['3x03bis', 'Place', 'Episode Title']
+  season: 3
+  episode: 3
+  episode_title: Place - Episode Title
+  date: 2016-04-09
+  container: mp4
+  type: episode
+
+? Show Name - 901 - Episode Title Here (Fr 2019) [720P] Fr5.2019-03-21-GRP.avi
+: options: {contextual_manual: true}
+  title: Show Name
+  season: 9
+  episode: 1
+  episode_title: Episode Title Here
+  language: fr
+  year: 2019
+  screen_size: 720p
+  streaming_service: France 5
+  date: 2019-03-21
+  release_group: GRP
+  container: avi
+  type: episode
+
+? Show Name - 11, 10 - Episode Title Here - 2019 - France5 2019-11-30 - DOC FR-GRP.mkv
+: options: {contextual_manual: true}
+  title: Show Name
+  season: 11
+  episode: 10
+  episode_title: Episode Title Here
+  year: 2019
+  streaming_service: France 5
+  date: 2019-11-30
+  release_group: GRP
+  language: fr
+  container: mkv
+  type: episode
+
+? Show Name - Long Episode Title Without Numbers - HDTV - DOC FR-GRP.mkv
+: options: {contextual_manual: true}
+  title: Show Name
+  alternative_title: Long Episode Title Without Numbers
+  episode_title: Long Episode Title Without Numbers
+  source: HDTV
+  release_group: GRP
+  language: fr
+  container: mkv
+  type: episode
+
+? Show Name - Long Episode Title Without Numbers - 2013 - France5 20160229 - HDTV - DOC FR-GRP.mp4
+: options: {contextual_manual: true}
+  title: Show Name
+  alternative_title: Long Episode Title Without Numbers
+  episode_title: Long Episode Title Without Numbers
+  year: 2013
+  streaming_service: France 5
+  date: 2016-02-29
+  source: HDTV
+  release_group: GRP
+  language: fr
+  container: mp4
   type: episode
